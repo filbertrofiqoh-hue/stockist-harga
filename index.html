@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Stockist Online</title>
+
+<style>
+body{
+    font-family: Arial;
+    margin:0;
+    background:#111;
+    color:white;
+}
+
+/* ================= LOGIN ================= */
+#loginPage{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    flex-direction:column;
+}
+
+/* LOGO LOGIN VIA CSS SRC */
+.logo-login{
+    width:220px;
+    height:120px;
+    background:url('logo.png') no-repeat center;
+    background-size:contain;
+    margin-bottom:20px;
+}
+
+.login-box{
+    background:#222;
+    padding:20px;
+    border-radius:10px;
+    text-align:center;
+}
+
+.login-box input{
+    display:block;
+    margin:10px auto;
+    padding:10px;
+    width:220px;
+}
+
+button{
+    padding:8px 12px;
+    cursor:pointer;
+}
+
+/* ================= MAIN ================= */
+#mainPage{
+    display:none;
+    padding:20px;
+}
+
+.logo{
+    text-align:center;
+    margin-bottom:20px;
+}
+.logo img{
+    width:180px;
+}
+
+/* TABLE */
+table{
+    width:100%;
+    border-collapse:collapse;
+    background:white;
+    color:black;
+}
+th, td{
+    border:2px solid black;
+    padding:8px;
+    text-align:center;
+}
+th{
+    background:#222;
+    color:white;
+}
+
+/* BUTTON */
+.btn{
+    padding:4px 10px;
+    margin:2px;
+    font-weight:bold;
+}
+.plus{background:green;color:white;}
+.minus{background:red;color:white;}
+
+/* INPUT */
+.form-input{
+    text-align:center;
+    margin-bottom:20px;
+}
+.form-input input{
+    padding:8px;
+    margin:5px;
+    width:150px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- ================= LOGIN ================= -->
+<div id="loginPage">
+    <div class="logo-login"></div>
+    <div class="login-box">
+        <h2>LOGIN ADMIN</h2>
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+    </div>
+</div>
+
+<!-- ================= MAIN ================= -->
+<div id="mainPage">
+
+<div class="logo">
+    <img src="logoo.png">
+</div>
+
+<h2 style="text-align:center;">SISTEM STOCKIST ONLINE</h2>
+
+<div class="form-input">
+    <input type="text" id="nama" placeholder="Nama Barang">
+    <input type="number" id="qty" placeholder="Qty">
+    <input type="number" id="harga" placeholder="Harga">
+    <input type="number" id="stock" placeholder="Stock">
+    <br>
+    <button onclick="tambahData()">Tambah Produk</button>
+    <button onclick="kirimWA()">Kirim Laporan WA</button>
+    <button onclick="logout()">Logout</button>
+</div>
+
+<table id="tabel">
+<thead>
+<tr>
+<th>NO</th>
+<th>NAMA BARANG</th>
+<th>QTY</th>
+<th>HARGA</th>
+<th>JUMLAH</th>
+<th>SISA STOCK</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+</div>
+
+<script>
+
+/* ================= LOGIN ================= */
+const adminUser = "admin";
+const adminPass = "12345";
+
+if(localStorage.getItem("login") === "true"){
+    showMain();
+}
+
+function login(){
+    let user = document.getElementById("username").value;
+    let pass = document.getElementById("password").value;
+
+    if(user === adminUser && pass === adminPass){
+        localStorage.setItem("login","true");
+        showMain();
+    }else{
+        alert("Username / Password salah!");
+    }
+}
+
+function logout(){
+    localStorage.removeItem("login");
+    location.reload();
+}
+
+function showMain(){
+    document.getElementById("loginPage").style.display="none";
+    document.getElementById("mainPage").style.display="block";
+}
+
+/* ================= DATA ================= */
+let data = JSON.parse(localStorage.getItem("stock")) || [
+{nama:"XIAOMI 32 A SERIES 2025",qty:1,harga:2099000,stock:100},
+{nama:"XIAOMI 32 A PRO 2026",qty:1,harga:2299000,stock:100},
+{nama:"XIAOMI 43 A SERIES",qty:1,harga:2899000,stock:100},
+{nama:"XIAOMI 43 A PRO 2026",qty:1,harga:3699000,stock:100},
+{nama:"XIAOMI 55 A PRO 2026",qty:1,harga:5599000,stock:100},
+{nama:"XIAOMI 65 A PRO 2026",qty:1,harga:7444000,stock:100},
+{nama:"XIAOMI 75 A PRO 2026",qty:1,harga:11899000,stock:100},
+{nama:"XIAOMI SMART 100 2026",qty:1,harga:29999000,stock:50},
+{nama:"BRACKET 32 INCH XIAOMI",qty:1,harga:79999,stock:1000},
+{nama:"BRACKET 43 INCH XIAOMI",qty:1,harga:149000,stock:1000},
+{nama:"BRACKET 55 INCH XIAOMI",qty:1,harga:199000,stock:1000},
+{nama:"BRACKET 65 INCH XIAOMI",qty:1,harga:299000,stock:1000}
+];
+
+/* ================= FUNCTION ================= */
+function formatRupiah(angka){
+    return "Rp" + angka.toLocaleString("id-ID");
+}
+
+function render(){
+    let tbody = document.querySelector("#tabel tbody");
+    tbody.innerHTML="";
+
+    data.forEach((item,i)=>{
+        let jumlah = item.qty * item.harga;
+
+        tbody.innerHTML += `
+        <tr>
+        <td>${i+1}</td>
+        <td>${item.nama}</td>
+        <td>
+            <button class="btn minus" onclick="kurang(${i})">-</button>
+            ${item.qty}
+            <button class="btn plus" onclick="tambah(${i})">+</button>
+        </td>
+        <td>${formatRupiah(item.harga)}</td>
+        <td>${formatRupiah(jumlah)}</td>
+        <td>${item.stock}</td>
+        </tr>
+        `;
+    });
+
+    localStorage.setItem("stock", JSON.stringify(data));
+}
+
+function tambah(i){
+    if(data[i].stock > 0){
+        data[i].qty++;
+        data[i].stock--;
+    }
+    render();
+}
+
+function kurang(i){
+    if(data[i].qty > 0){
+        data[i].qty--;
+        data[i].stock++;
+    }
+    render();
+}
+
+function tambahData(){
+    let nama = document.getElementById("nama").value;
+    let qty = parseInt(document.getElementById("qty").value);
+    let harga = parseInt(document.getElementById("harga").value);
+    let stock = parseInt(document.getElementById("stock").value);
+
+    if(!nama || !qty || !harga || !stock){
+        alert("Isi semua data!");
+        return;
+    }
+
+    data.push({nama,qty,harga,stock});
+    render();
+}
+
+function kirimWA(){
+    let text = "LAPORAN STOCK:\n\n";
+
+    data.forEach((item,i)=>{
+        text += `${i+1}. ${item.nama}\nQty: ${item.qty}\nStock: ${item.stock}\n\n`;
+    });
+
+    let url = "https://wa.me/6289649130717?text=" + encodeURIComponent(text);
+    window.open(url);
+}
+
+render();
+
+</script>
+
+</body>
+</html>
